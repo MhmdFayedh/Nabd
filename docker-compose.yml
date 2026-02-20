@@ -3,26 +3,26 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16
-    container_name: cms-postgres
+    container_name: nabd-postgres
     environment:
-      POSTGRES_DB: cms_db
-      POSTGRES_USER: cms_user
-      POSTGRES_PASSWORD: cms_pass
+      POSTGRES_DB: nabd_db
+      POSTGRES_USER: nabd_user
+      POSTGRES_PASSWORD: nabd_pass
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - cms-network
+      - nabd-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U cms_user -d cms_db" ]
+      test: [ "CMD-SHELL", "pg_isready -U nabd_user -d nabd_db" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:9.0.0
-    container_name: cms-elasticsearch
+    container_name: nabd-elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -35,7 +35,7 @@ services:
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     networks:
-      - cms-network
+      - nabd-network
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://elasticsearch:9200/_cluster/health || exit 1" ]
       interval: 30s
@@ -45,14 +45,14 @@ services:
 
   redis:
     image: redis:7.2-alpine
-    container_name: cms-redis
+    container_name: nabd-redis
     ports:
       - "6379:6379"
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
     networks:
-      - cms-network
+      - nabd-network
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
@@ -63,7 +63,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: cms-app
+    container_name: nabd-app
     ports:
       - "8080:8080"
     environment:
@@ -81,11 +81,11 @@ services:
       - ./logs:/app/logs
       - ./uploads:/app/uploads
     networks:
-      - cms-network
+      - nabd-network
 
   kibana:
     image: docker.elastic.co/kibana/kibana:9.0.0
-    container_name: cms-kibana
+    container_name: nabd-kibana
     ports:
       - "5601:5601"
     environment:
@@ -95,11 +95,11 @@ services:
       elasticsearch:
         condition: service_healthy
     networks:
-      - cms-network
+      - nabd-network
 
   filebeat:
     image:  docker.elastic.co/beats/filebeat:9.0.0
-    container_name: cms-filebeat
+    container_name: nabd-filebeat
     user: root
     command:
       - -e
@@ -111,7 +111,7 @@ services:
       elasticsearch:
         condition: service_healthy
     networks:
-      - cms-network
+      - nabd-network
 
 volumes:
   postgres_data:
@@ -119,5 +119,5 @@ volumes:
   redis_data:
 
 networks:
-  cms-network:
+  nabd-network:
     driver: bridge
