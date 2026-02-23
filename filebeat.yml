@@ -10,4 +10,4 @@ processors:
 
 output.elasticsearch:
   hosts: ["elasticsearch:9200"]
-  index: "cms-logs-%{+yyyy.MM.dd}"
+  index: "nabd-logs-%{+yyyy.MM.dd}"
